@@ -22,8 +22,7 @@
 #import "FBRequestConnection.h"
 #import "FBSession+Internal.h"
 #import "FBTestBlocker.h"
-#import "FBTestSession+Internal.h"
-#import "FBTestSession.h"
+#import "FBTestUserSession.h"
 
 #if defined(FACEBOOKSDK_SKIP_REQUEST_CONNECTION_TESTS)
 
@@ -141,8 +140,8 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 
 - (void)testWillPiggybackTokenExtensionIfNeeded
 {
-    FBTestSession *session = [self getSessionWithSharedUserWithPermissions:nil];
-    session.forceAccessTokenRefresh = YES;
+    FBTestUserSession *session = [self defaultTestSession];
+    session.forceAccessTokenExtension = YES;
     // Invoke shouldRefreshPermissions which has the side affect of disabling permissions refresh piggybacking for an hour.
     [session shouldRefreshPermissions];
     
@@ -159,16 +158,16 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     NSArray *requests = [connection performSelector:@selector(requests)];
 
     // Therefore, only expect the the token refresh piggyback in addition to the original request for /me
-    int count = requests.count;
-    XCTAssertEqual(2,count, @"unexpected number of piggybacks");
+    NSUInteger count = requests.count;
+    XCTAssertEqual(2u, count, @"unexpected number of piggybacks");
     
     [connection release];
 }
 
 - (void)testWillPiggybackPermissionsRefresh
 {
-    FBTestSession *session = [self getSessionWithSharedUserWithPermissions:nil];
-    session.forceAccessTokenRefresh = YES;
+    FBTestUserSession *session = [self defaultTestSession];
+    session.forceAccessTokenExtension = YES;
     // verify session's permissions refresh date is initially in the past.
     XCTAssertEqual([NSDate distantPast], session.accessTokenData.permissionsRefreshDate, @"session permission refresh date does not match");
     
@@ -185,8 +184,8 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     NSArray *requests = [connection performSelector:@selector(requests)];
 
     // Expect the token refresh and permission refresh to be piggybacked.
-    int count = requests.count;
-    XCTAssertEqual(3,count, @"unexpected number of piggybacks");
+    NSUInteger count = requests.count;
+    XCTAssertEqual(3u, count, @"unexpected number of piggybacks");
     
     [connection release];
     
@@ -197,8 +196,8 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 // if the session had been closed.
 - (void)testPiggybackPermissionsRefreshNoopForClosedSession
 {
-    id session = [OCMockObject partialMockForObject:[self getSessionWithSharedUserWithPermissions:nil]];
-    [session setForceAccessTokenRefresh:YES];
+    id session = [OCMockObject partialMockForObject:[self defaultTestSession]];
+    [session setTreatReauthorizeAsCancellation:YES];
 
     //partial mock the session so we can make sure session is closed and `handleRefreshPermissions` should do nothing.
     [[[session stub] andDo:^(NSInvocation *invocation) {
@@ -234,7 +233,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     FBTestBlocker *blocker2 = [[FBTestBlocker alloc] init];
 
     
-    FBTestSession *session = [self getSessionWithSharedUserWithPermissions:nil];
+    FBSession *session = [self defaultTestSession];
     
     // here we just want to seed the cache, by identifying the cache, and by choosing not to consult the cache
     FBRequestConnectionDelegateProgressTest *progress = [[FBRequestConnectionDelegateProgressTest alloc] initWithBlocker:blocker2];
@@ -308,7 +307,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     // 4) another object is deleted
     FBTestBlocker *blocker = [[[FBTestBlocker alloc] initWithExpectedSignalCount:3] autorelease];
     
-    FBTestSession *session = [self getSessionWithSharedUserWithPermissions:nil];
+    FBSession *session = [self loginSession:[self getTestSessionWithPermissions:@[@"read_stream",@"publish_actions"]]];
     
     FBRequest *request = [[[FBRequest alloc] initWithSession:session
                                                    graphPath:@"me/feed"]
@@ -353,20 +352,18 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     
     connection = [[[FBRequestConnection alloc] init] autorelease];
     FBRequest *deleteRequest = [[FBRequest alloc] initWithSession:session
-                                                        graphPath:[fbids objectAtIndex:fbids.count-1]
+                                                        graphPath:fbids[2]
                                                        parameters:nil
                                                        HTTPMethod:@"delete"];
     [connection addRequest:deleteRequest
          completionHandler:^(FBRequestConnection *innerConnection, id result, NSError *error) {
              XCTAssertNotNil(result, @"should have a result here: Handler 2");
              XCTAssertNil(error, @"should not have an error here: Handler 2");
-             XCTAssertTrue(0 != fbids.count, @"not enough fbids: Handler 2");
-             [fbids removeObjectAtIndex:fbids.count-1];
              [blocker signal];             
          }];
     
     deleteRequest = [[FBRequest alloc] initWithSession:session
-                                             graphPath:[fbids objectAtIndex:fbids.count-1]
+                                             graphPath:fbids[1]
                                             parameters:[NSDictionary dictionaryWithObjectsAndKeys:
                                                         @"delete", @"method",
                                                         nil]
@@ -375,16 +372,15 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
          completionHandler:^(FBRequestConnection *innerConnection, id result, NSError *error) {
              XCTAssertNotNil(result, @"should have a result here: Handler 3");
              XCTAssertNil(error, @"should not have an error here: Handler 3");
-             XCTAssertTrue(0 != fbids.count, @"not enough fbids: Handler 3");
-             [fbids removeObjectAtIndex:fbids.count-1];
              [blocker signal];             
          }];
     
+    __block NSString *newfbid = nil;
     [connection addRequest:request completionHandler:^(FBRequestConnection *innerConnection, id result, NSError *error) {
         XCTAssertNotNil(result, @"should have a result here: Handler 4");
         XCTAssertNil(error, @"should not have an error here: Handler 4");
         if (result) {
-            [fbids addObject: [[result objectForKey:@"id"] description]];
+            newfbid = [(NSString *)[result objectForKey:@"id"] retain];
         }
         [blocker signal];
     }];
@@ -393,6 +389,11 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     [connection start];
     
     XCTAssertTrue([blocker waitWithTimeout:30], @"blocker timed out");
+    // update the fbids array from the batch (deleting the 2 and adding the one).
+    [fbids removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, 2)]];
+    [fbids addObject:newfbid];
+    [newfbid release];
+
     if (fbids.count != 2) {
         XCTAssertTrue(fbids.count == 2, @"wrong number of fbids, aborting test");
         // Things are bad. Continuing isn't going to make them better, and might throw exceptions.
@@ -403,7 +404,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     
     // delete
     request = [[[FBRequest alloc] initWithSession:session
-                                        graphPath:[fbids objectAtIndex:fbids.count-1]
+                                        graphPath:fbids[0]
                                        parameters:[NSDictionary dictionaryWithObjectsAndKeys:
                                                    @"delete", @"method",
                                                    nil]
@@ -412,26 +413,20 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
      ^(FBRequestConnection *innerConnection, id result, NSError *error) {
          XCTAssertNotNil(result, @"should have a result here: Handler 5");
          XCTAssertNil(error, @"should not have an error here: Handler 5");
-         XCTAssertTrue(0 != fbids.count, @"not enough fbids: Handler 5");
-         [fbids removeObjectAtIndex:fbids.count-1];
          [blocker signal];
      }];
     // delete
     request = [[[FBRequest alloc] initWithSession:session
-                                        graphPath:[fbids objectAtIndex:fbids.count-1] 
+                                        graphPath:fbids[1]
                                        parameters:nil 
                                        HTTPMethod:@"delete"] autorelease];
     [request startWithCompletionHandler:^(FBRequestConnection *innerConnection, id result, NSError *error) {
         XCTAssertNotNil(result, @"should have a result here: Handler 6");
         XCTAssertNil(error, @"should not have an error here: Handler 6");
-        XCTAssertTrue(0 != fbids.count, @"not enough fbids: Handler 6");
-        [fbids removeObjectAtIndex:fbids.count-1];
         [blocker signal];
     }];
     
     XCTAssertTrue([blocker waitWithTimeout:30], @"blocker timed out");
-    
-    XCTAssertTrue(fbids.count == 0, @"Our fbid collection should be empty here");
 }
 
 - (void)testNilCompletionHandler {
@@ -447,7 +442,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     
     FBTestBlocker *blocker = [[FBTestBlocker alloc] init];
     
-    FBTestSession *session = [self getSessionWithSharedUserWithPermissions:nil];
+    FBSession *session = [self loginSession:[self getTestSessionWithPermissions:@[@"publish_actions"]]];
     
     FBRequest *postRequest = [[[FBRequest alloc] initWithSession:session
                                                        graphPath:@"me/feed"]
@@ -506,19 +501,24 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 }
 
 - (void)testMultipleSelectionWithDependenciesBatch {
-    FBTestSession *session = [self getSessionWithSharedUserWithPermissions:nil];
+    NSArray *sessions = [self getTestSessionsWithPermissions:@[] count:2];
+    FBSession *session1 = [self loginSession:sessions[0]];
+    FBSession *session2 = [self loginSession:sessions[1]];
+
     FBRequestConnection *connection = [[FBRequestConnection alloc] init];
     FBTestBlocker *blocker = [[FBTestBlocker alloc] initWithExpectedSignalCount:2];
 
-    NSString *graphPath = [NSString stringWithFormat:@"?ids=%@,%@&fields=id", session.testAppID, session.testUserID];
-    FBRequest *parent = [[[FBRequest alloc] initWithSession:session graphPath:graphPath] autorelease];
+    NSString *graphPath = [NSString stringWithFormat:@"?ids=%@,%@&fields=id",
+                           session1.accessTokenData.userID,
+                           session2.accessTokenData.userID];
+    FBRequest *parent = [[[FBRequest alloc] initWithSession:session1 graphPath:graphPath] autorelease];
     [connection addRequest:parent
          completionHandler:^(FBRequestConnection *innerConnection, id result, NSError *error) {
              XCTAssertNil(error, @"unexpected error in parent request :%@", error);
              [blocker signal];
          } batchEntryName:@"getactions"];
 
-    FBRequest *child = [[[FBRequest alloc] initWithSession:session graphPath:@"?ids={result=getactions:$.*.id}"] autorelease];
+    FBRequest *child = [[[FBRequest alloc] initWithSession:session1 graphPath:@"?ids={result=getactions:$.*.id}"] autorelease];
     [connection addRequest:child
          completionHandler:^(FBRequestConnection *innerConnection, id result, NSError *error) {
              XCTAssertNil(error, @"unexpected error in child request :%@", error);
@@ -532,7 +532,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 }
 
 - (void)testProgressReporting {
-    FBTestSession *session = [self getSessionWithSharedUserWithPermissions:nil];
+    FBTestUserSession *session = [self defaultTestSession];
     FBRequestConnection *connection = [[FBRequestConnection alloc] init];
     FBTestBlocker *blocker1 = [[FBTestBlocker alloc] init];
     FBTestBlocker *blocker2 = [[FBTestBlocker alloc] init];
@@ -561,6 +561,36 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
     [blocker1 release];
     [connection release];
 }
+
+- (void)testInvalidUTF8Response {
+    // there is nothing in this byte sequence that is valid UTF-8
+    const unsigned char invalidCharacters[] = {
+        0xF0, 0x82, 0x82, 0xAC, // overlong Euro character
+        0xC0, 0xF5,             // invalid bytes
+        0x00,                   // NUL
+        0xE8, 0x40, 0x41        // three byte sequence without continuation bytes
+    };
+    [self verifyInvalidUTF8ResponseFails:invalidCharacters length:sizeof(invalidCharacters)];
+
+    // mostly valid JSON, but \350 (i.e. 0xE8) begins a 3-byte sequence but has no continuation characters
+    const char *invalidJSON = "{ body: \"\350test\" }";
+    [self verifyInvalidUTF8ResponseFails:invalidJSON length:strlen(invalidJSON)];
+}
+
+- (void)verifyInvalidUTF8ResponseFails:(const void *)bytes length:(NSUInteger)length {
+    FBRequestConnection *connection = [[FBRequestConnection alloc] init];
+
+    NSData *data = [NSData dataWithBytes:bytes length:length];
+
+    NSError *error = nil;
+    NSArray *response = [connection parseJSONResponse:data error:&error statusCode:200];
+
+    XCTAssertEqual([error code], FBErrorUnexpectedResponse, "The byte sequence above should be unexpected.");
+    XCTAssertNil(response, @"The data passed was not valid JSON.");
+
+    [connection release];
+}
+
 @end
 
 #endif

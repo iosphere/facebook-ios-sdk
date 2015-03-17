@@ -2463,6 +2463,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 892B1FA11926A84100E61379 /* FacebookSDK-Project-Debug.xcconfig */;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+					"$(DERIVED_FILE_DIR)",
+					"$(TARGET_BUILD_DIR)",
+				);
 			};
 			name = Debug;
 		};
@@ -2470,6 +2476,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 892B1FA21926A84100E61379 /* FacebookSDK-Project-Release.xcconfig */;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+					"$(DERIVED_FILE_DIR)",
+					"$(TARGET_BUILD_DIR)",
+				);
 			};
 			name = Release;
 		};

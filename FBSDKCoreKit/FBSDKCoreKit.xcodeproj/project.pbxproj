@@ -185,6 +185,9 @@
 		9DF18BCB1A9F2517000F6748 /* FBSDKErrorConfigurationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9DF18BCA1A9F2517000F6748 /* FBSDKErrorConfigurationTests.m */; };
 		9DF2A3FF1A70572B00DFB2FD /* FBSDKGraphRequestMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 9DF2A3FD1A70572B00DFB2FD /* FBSDKGraphRequestMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9DF2A4001A70572B00DFB2FD /* FBSDKGraphRequestMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 9DF2A3FE1A70572B00DFB2FD /* FBSDKGraphRequestMetadata.m */; };
+		E93D01BF1ADC40BB00FE0FDA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 893F44A11A644512001DB0B6 /* CoreGraphics.framework */; };
+		E93D01C01ADC40D200FE0FDA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 893F449F1A64450C001DB0B6 /* UIKit.framework */; };
+		E98395271ADC377000A98315 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D9947171A9531B5003375EC /* Bolts.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -483,6 +486,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E93D01C01ADC40D200FE0FDA /* UIKit.framework in Frameworks */,
+				E93D01BF1ADC40BB00FE0FDA /* CoreGraphics.framework in Frameworks */,
+				E98395271ADC377000A98315 /* Bolts.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1387,6 +1393,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9D2697651A5DF43700143BFC /* FacebookSDK-Library.xcconfig */;
 			buildSettings = {
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = mh_dylib;
 			};
 			name = Debug;
 		};
@@ -1394,6 +1406,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9D2697651A5DF43700143BFC /* FacebookSDK-Library.xcconfig */;
 			buildSettings = {
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = mh_dylib;
 			};
 			name = Release;
 		};

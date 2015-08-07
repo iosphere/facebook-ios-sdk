@@ -334,7 +334,7 @@ static const struct
   void(^notificationBlock)(NSNotification *) = ^(NSNotification *note){
     NSData *pasteboardData = [pasteboard dataForPasteboardType:FBSDKBridgeAPIProtocolNativeV1DataPasteboardKey];
     if ([data isEqualToData:pasteboardData]) {
-      [pasteboard setData:nil forPasteboardType:FBSDKBridgeAPIProtocolNativeV1DataPasteboardKey];
+      [pasteboard setData:[NSData new] forPasteboardType:FBSDKBridgeAPIProtocolNativeV1DataPasteboardKey];
     }
   };
   [[NSNotificationCenter defaultCenter] addObserverForName:FBSDKApplicationDidBecomeActiveNotification

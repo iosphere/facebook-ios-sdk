@@ -115,8 +115,7 @@ FBSDK_EXTERN NSString *const FBSDKAccessTokenChangeNewKey;
                               appID:(NSString *)appID
                              userID:(NSString *)userID
                      expirationDate:(NSDate *)expirationDate
-                        refreshDate:(NSDate *)refreshDate
-NS_DESIGNATED_INITIALIZER;
+                        refreshDate:(NSDate *)refreshDate;
 
 /*!
  @abstract Convenience getter to determine if a permission has been granted

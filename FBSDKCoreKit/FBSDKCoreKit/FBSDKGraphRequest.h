@@ -71,8 +71,7 @@
                        parameters:(NSDictionary *)parameters
                       tokenString:(NSString *)tokenString
                           version:(NSString *)version
-                       HTTPMethod:(NSString *)HTTPMethod
-NS_DESIGNATED_INITIALIZER;
+                       HTTPMethod:(NSString *)HTTPMethod;
 
 /*!
  @abstract The request parameters.

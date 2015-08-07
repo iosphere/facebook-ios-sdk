@@ -35,8 +35,7 @@ implicitPurchaseLoggingEnabled:(BOOL)implicitPurchaseLoggingEnabled
   systemAuthenticationEnabled:(BOOL)systemAuthenticationEnabled
          dialogConfigurations:(NSDictionary *)dialogConfigurations
                     timestamp:(NSDate *)timestamp
-           errorConfiguration:(FBSDKErrorConfiguration *)errorConfiguration
-NS_DESIGNATED_INITIALIZER;
+           errorConfiguration:(FBSDKErrorConfiguration *)errorConfiguration;
 
 @property (nonatomic, assign, readonly, getter=isAdvertisingIDEnabled) BOOL advertisingIDEnabled;
 @property (nonatomic, copy, readonly) NSString *appID;

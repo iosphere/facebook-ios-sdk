@@ -66,7 +66,7 @@ FBSDK_EXTERN NSString *const FBSDKProfileChangeNewKey;
                       lastName:(NSString *)lastName
                           name:(NSString *)name
                        linkURL:(NSURL *)linkURL
-                   refreshDate:(NSDate *)refreshDate NS_DESIGNATED_INITIALIZER;
+                   refreshDate:(NSDate *)refreshDate;
 /*!
  @abstract The user id
  */

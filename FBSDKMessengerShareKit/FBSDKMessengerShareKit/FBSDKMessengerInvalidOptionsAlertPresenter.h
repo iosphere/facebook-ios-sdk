@@ -16,16 +16,18 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "TestAppIdAndSecret.xcconfig"
+#import <UIKit/UIKit.h>
 
-// Code Signing
-CODE_SIGN_IDENTITY[sdk=iphoneos*] = iPhone Developer
+/*!
+ @class FBSDKMessengerInvalidOptionsAlertPresenter
 
-// Packaging
-WRAPPER_EXTENSION = xctest
+ @abstract
+ Presents an alert telling the developer that they didn't provide valid options
+ */
+@interface FBSDKMessengerInvalidOptionsAlertPresenter : NSObject
 
-// Linking
-OTHER_LDFLAGS = -all_load -lc++
-ENABLE_BITCODE = NO
++ (instancetype)sharedInstance;
 
-IPHONEOS_DEPLOYMENT_TARGET = 8.0
+- (void)presentInvalidOptionsAlert;
+
+@end

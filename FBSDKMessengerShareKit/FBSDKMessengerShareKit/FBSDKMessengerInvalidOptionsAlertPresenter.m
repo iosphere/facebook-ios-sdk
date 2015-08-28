@@ -16,16 +16,31 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "TestAppIdAndSecret.xcconfig"
+#import "FBSDKMessengerInvalidOptionsAlertPresenter.h"
 
-// Code Signing
-CODE_SIGN_IDENTITY[sdk=iphoneos*] = iPhone Developer
+@implementation FBSDKMessengerInvalidOptionsAlertPresenter
 
-// Packaging
-WRAPPER_EXTENSION = xctest
++ (instancetype)sharedInstance
+{
+  static FBSDKMessengerInvalidOptionsAlertPresenter *sharedInstance = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    sharedInstance = [[self alloc] init];
+  });
+  return sharedInstance;
+}
 
-// Linking
-OTHER_LDFLAGS = -all_load -lc++
-ENABLE_BITCODE = NO
+#pragma mark - Public
 
-IPHONEOS_DEPLOYMENT_TARGET = 8.0
+- (void)presentInvalidOptionsAlert
+{
+  UIAlertView * alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Invalid Options", @"Alert title telling the developers that they provided invalid options.")
+                                                   message:NSLocalizedString(@"You need to provide valid options", @"Message when invalid options are provided.")
+                                                  delegate:self
+                                         cancelButtonTitle:NSLocalizedString(@"OK", @"Button label when the developers have acknowledged the error.")
+                                         otherButtonTitles:nil, nil];
+  [alert show];
+
+}
+
+@end

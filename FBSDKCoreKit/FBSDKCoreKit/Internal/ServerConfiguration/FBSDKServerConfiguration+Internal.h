@@ -18,27 +18,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import <FBSDKCoreKit/FBSDKCopying.h>
+extern NSString *const FBSDKDialogConfigurationNameDefault;
+extern NSString *const FBSDKDialogConfigurationNameSharing;
 
-#import "FBSDKBridgeAPIProtocolType.h"
-
-@interface FBSDKBridgeAPIRequest : NSObject <FBSDKCopying>
-
-+ (instancetype)bridgeAPIRequestWithProtocolType:(FBSDKBridgeAPIProtocolType)protocolType
-                                          scheme:(NSString *)scheme
-                                      methodName:(NSString *)methodName
-                                   methodVersion:(NSString *)methodVersion
-                                      parameters:(NSDictionary *)parameters
-                                        userInfo:(NSDictionary *)userInfo;
-
-@property (nonatomic, copy, readonly) NSString *actionID;
-@property (nonatomic, copy, readonly) NSString *methodName;
-@property (nonatomic, copy, readonly) NSString *methodVersion;
-@property (nonatomic, copy, readonly) NSDictionary *parameters;
-@property (nonatomic, assign, readonly) FBSDKBridgeAPIProtocolType protocolType;
-@property (nonatomic, copy, readonly) NSString *scheme;
-@property (nonatomic, copy, readonly) NSDictionary *userInfo;
-
-- (NSURL *)requestURL:(NSError *__autoreleasing *)errorRef;
-
-@end
+extern NSString *const FBSDKDialogConfigurationFeatureUseNativeFlow;
+extern NSString *const FBSDKDialogConfigurationFeatureUseSafariViewController;

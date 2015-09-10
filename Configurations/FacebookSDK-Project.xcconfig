@@ -56,8 +56,8 @@ CLANG_CXX_LIBRARY = libc++
 // Bitcode Support
 ENABLE_BITCODE = YES
 FB_BITCODE_FLAG = $()
-FB_BITCODE_FLAG[sdk=iphoneos9.0] = -fembed-bitcode-marker
-FB_BITCODE_FLAG[sdk=iphonesimulator9.0] = -fembed-bitcode-marker
+FB_BITCODE_FLAG[sdk=iphoneos9.0] = -fembed-bitcode
+FB_BITCODE_FLAG[sdk=iphonesimulator9.0] = -fembed-bitcode
 OTHER_CFLAGS = $(inherited) $(FB_BITCODE_FLAG)
 
 // Warnings

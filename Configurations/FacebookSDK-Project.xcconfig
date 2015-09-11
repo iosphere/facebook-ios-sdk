@@ -58,7 +58,9 @@ ENABLE_BITCODE = YES
 FB_BITCODE_FLAG = $()
 FB_BITCODE_FLAG[sdk=iphoneos9.0] = -fembed-bitcode
 FB_BITCODE_FLAG[sdk=iphonesimulator9.0] = -fembed-bitcode
-OTHER_CFLAGS = $(inherited) $(FB_BITCODE_FLAG)
+// not everywhere, but only in Release, see OTHER_CFLAGS in FacebookSDK-Project-Release.xcconfig
+// most likely -fembed-bitcode should only be set when archiving, or not at all as of Xcode 7 GM.
+//OTHER_CFLAGS = $(inherited) $(FB_BITCODE_FLAG)
 
 // Warnings
 CLANG_WARN__DUPLICATE_METHOD_MATCH = YES
